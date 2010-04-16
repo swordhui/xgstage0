@@ -3,8 +3,7 @@
 . functions_pub
 
 PackageName=zlib-1.2.3
-PackageURL=http://www.zlib.net/zlib-1.2.3.tar.gz
-
+PackageURL=http://downloads.sourceforge.net/project/libpng/zlib/1.2.3/zlib-1.2.3.tar.gz
 
 case "${1}" in
 download)

@@ -6,8 +6,8 @@
 
 . functions_pub
 
-PackageName=gpkg-0.10.0
-PackageURL=http://xiangelinux.googlecode.com/files/gpkg-0.10.0.tar.bz2
+PackageName=gpkg-0.10.1
+PackageURL=http://xiangelinux.googlecode.com/files/gpkg-0.10.1.tar.bz2
 
 
 case "${1}" in
