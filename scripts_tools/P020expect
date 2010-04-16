@@ -1,0 +1,53 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=expect-5.43
+PackageURL=http://expect.nist.gov/src/expect-5.43.0.tar.gz
+Patch1URL=http://www.linuxfromscratch.org/patches/lfs/6.4/expect-5.43.0-spawn-1.patch
+Patch2URL=http://www.linuxfromscratch.org/patches/lfs/6.4/expect-5.43.0-tcl_8.5.5_fix-1.patch
+
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	check_and_download $Patch1URL
+	check_and_download $Patch2URL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+
+	#patch.
+	patch -Np1 -i $LFS_SOURCE/`basename $Patch1URL`
+	err_check "[Error] Expect: patch1 failed."
+	patch -Np1 -i $LFS_SOURCE/`basename $Patch2URL`
+	err_check "[Error] Expect: patch2 failed."
+
+	#change /usr/local/bin to /bin
+	cp -v configure{,.orig}
+	sed 's:/usr/local/bin:/bin:' configure.orig > configure
+
+	./configure --prefix=/tools --with-tcl=/tools/lib \
+		--with-tclinclude=/tools/include --with-x=no
+
+
+	#step4: make.
+	make
+	err_check "[Error] make failed."	
+
+	#step5: install.
+	make SCRIPTS="" install
+	err_check "[Error] install failed."
+
+	#leave.
+        package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

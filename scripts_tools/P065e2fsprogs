@@ -1,0 +1,48 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=e2fsprogs-1.41.7
+PackageURL=http://prdownloads.sourceforge.net/e2fsprogs/e2fsprogs-1.41.7.tar.gz
+
+fullname=`basename $PackageURL`
+
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+
+	#create build directory.
+	mkdir -v build
+	cd build
+
+	../configure --prefix=/tools 
+	err_check "[Error] configure $PackageName failed."
+
+
+	#step4: make.
+	make
+	err_check "[Error] make $PackageName failed."	
+
+	#step5: install.
+	make install-libs
+	err_check "[Error] install $PackageName failed."
+
+	chmod -v u+w \
+	/tools/lib/{libblkid,libcom_err,libe2p,libext2fs,libss,libuuid}.a
+
+	#leave.
+        package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

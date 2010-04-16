@@ -1,0 +1,52 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=perl-5.10.0
+PackageURL=http://www.perl.com/CPAN/src/5.0/perl-5.10.0.tar.gz
+PatchURL=http://www.linuxfromscratch.org/patches/lfs/6.4/perl-5.10.0-consolidated-1.patch
+
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	check_and_download $PatchURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+	
+	#patch
+	patch -Np1 -i $LFS_SOURCE/`basename $PatchURL`
+	err_check "[Error] patch $PackageName failed."
+
+	#configure	
+	sh Configure -des -Dprefix=/tools \
+		-Dstatic_ext='Data/Dumper Fcntl IO POSIX'
+	err_check "[Error] configure $PackageName failed."
+
+	#step4: make.
+	make perl utilities ext/Errno/pm_to_blib
+	err_check "[Error] make $PackageName failed."	
+
+	#step5: install.
+	cp -v perl pod/pod2man /tools/bin
+	err_check "[Error] install $PackageName failed."
+
+	mkdir -pv /tools/lib/perl5/5.10.0
+	err_check "[Error] install $PackageName failed."
+
+	cp -Rv lib/* /tools/lib/perl5/5.10.0
+	err_check "[Error] install $PackageName failed."
+
+	#leave directory.
+	package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

@@ -1,0 +1,324 @@
+#!/bin/bash
+#######################################
+#
+# public routines for alfs_sword.
+# by sword<swordhui@263.net>
+#
+#######################################
+
+#base directory.
+SCRIPTS_BASE=`pwd`
+
+#root of lfs.
+LFS=${SCRIPTS_BASE}/..
+LFS_TOOLS=${LFS}/tools
+LFS_SOURCE=${LFS}/var/xiange/sources
+LFS_TEMP=${LFS}/tmp/xgstage0
+
+export LFS=${LFS}
+
+#get string count. parameter is an array.
+get_string_count()
+{
+	ret=$#
+}
+
+#get all packages.
+get_packages()
+{
+	ret=`ls -v $1/P* 2>/dev/null`
+}
+
+#echek error code. $1 is string if error.
+err_check()
+{
+	if [ "$?" != 0 ]; then
+		echo $1
+		exit 1
+	fi
+	return 0
+}
+
+#check and download package in raw mode, $1 is URL, $2 is local file name.
+check_and_download_raw()
+{
+	local fname=$2
+	local retry
+
+	#retry 3 times
+	for((retry=0; retry<3; retry++))
+	do
+		#check if package has already exist.
+		if [ -f ${LFS_SOURCE}/${fname} ]; then
+			printf "%s exists, Skip.\n" $fname
+			return 0
+		else
+			printf "downloading from %s, retry %d...\n" ${1} ${retry}
+			rm -f ${LFS_SOURCE}/${fname}.tmp
+			wget $1 -O ${LFS_SOURCE}/${fname}.tmp
+			if [ "$?" == 0 ]; then
+				#download ok.
+				mv ${LFS_SOURCE}/${fname}.tmp ${LFS_SOURCE}/${fname}
+				return 0
+			fi
+		fi
+	done
+
+	printf "down load failed, quit.\n"
+	return 1
+
+}
+
+#check and download package, $1 is URL.
+check_and_download()
+{
+	local fname=`basename ${1}`
+
+	#call raw mode.
+	check_and_download_raw $1 $fname
+}
+
+#add tool $1 to tools directory.
+if [ "$LFSSIGN" == "lfs_chroot" ]; then
+	#in lfs or blfs
+	tools_logfile=/var/lfs/installed.log
+else
+	#when building tools
+	tools_logfile=/tools/installed.log
+fi
+
+add_tools()
+{	
+	echo $1 `date +"%Y-%m-%d %k:%M:%S"`  $2 >> $tools_logfile
+}
+
+
+#check if tools installed.
+check_tools_raw()
+{
+	grep "\b${1}\b" ${tools_logfile} 2>/dev/null
+}
+
+#check if tools $1 installed. and exit if installed.
+check_tools()
+{
+	check_tools_raw ${1}
+	
+	if [ "$?" == 0 ]; then
+		#installed.
+		echo "$1 installed, skip."
+		exit 0
+	else
+		#not installed.
+		return 1;
+	fi
+}
+
+add_tools_done_sign()
+{
+	echo "#lfs_tools_done" >> $tools_logfile
+}
+
+check_tools_done_sign()
+{
+	grep "lfs_tools_done" ${tools_logfile} 2>/dev/null
+	
+	if [ "$?" == 0 ]; then
+		#done.
+		echo "lfs tools build ok."
+		return 0
+	else
+		#not installed.
+		echo "lfs tools build not ok, continue"
+		return 1;
+	fi
+	
+}
+
+#unpack and enter package directory. $1=package name, $2=URL. 
+#	$3 is suffix to package name when add to log.
+unpack_and_enter()
+{
+	local fullname=`basename $2`
+
+	#step 0: check if installed.
+        check_tools $1$3
+
+	#step 1: unpack to temp directory.
+	if [ -d $LFS_TEMP/$1 ]; then
+		echo "$1 have already exist, config directly."
+	else
+        	printf "unpack %s to %s...\n" $fullname $LFS_TEMP
+        	tar xf $LFS_SOURCE/$fullname -C $LFS_TEMP
+        	err_check "[ERROR] uncompress $fullname failed."
+	fi
+
+	#enter directory.
+  	pushd $LFS_TEMP/$1
+        err_check "[ERROR] pushd $1 failed."
+}
+
+#unzip and enter package directory. $1=package name, $2=URL. 
+#	$3 is suffix to package name when add to log.
+unzip_and_enter()
+{
+	local fullname=`basename $2`
+
+	#step 0: check if installed.
+        check_tools $1$3
+
+	#step 1: unpack to temp directory.
+	if [ -d $LFS_TEMP/$1 ]; then
+		echo "$1 have already exist, config directly."
+	else
+        	printf "unzip %s to %s...\n" $fullname $LFS_TEMP
+        	unzip $LFS_SOURCE/$fullname -d $LFS_TEMP
+        	err_check "[ERROR] uncompress $fullname failed."
+	fi
+
+	#enter directory.
+  	pushd $LFS_TEMP/$1
+        err_check "[ERROR] pushd $1 failed."
+}
+
+#leave package directory. $1=package name, $2=URL, 
+#	$3 is suffix to package name when add to log.
+package_leave()
+{
+	#add to log.
+	add_tools $1$3
+        err_check "[Error] add tool to logfile failed."
+
+	#roll back.
+        popd
+
+	#clean temp dir.
+	echo "cleaning temp.."
+	rm -rf $LFS_TEMP/*
+
+}
+
+build_lfs_blfs()
+{
+	#mount sys proc.
+	echo "mounting sysfs.."
+	mkdir -p $LFS/{dev,proc,sys}
+	test -c $LFS/dev/console || mknod -m 600 $LFS/dev/console c 5 1
+	test -c $LFS/dev/null || mknod -m 666 $LFS/dev/null c 1 3
+
+	mount -v --bind /dev $LFS/dev
+	mount -vt devpts devpts $LFS/dev/pts
+	mount -vt tmpfs shm $LFS/dev/shm
+	mount -vt proc proc $LFS/proc
+	mount -vt sysfs sysfs $LFS/sys
+
+	#build lfs and blfs in chroot environment.
+	chroot "$LFS" /tools/bin/env -i \
+		HOME=/root TERM="$TERM" PS1='\u:\w\$ ' \
+		PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin \
+		LFSSIGN=lfs_chroot\
+		/tools/bin/bash --login +h /scripts/scripts_lfs/build
+	if [ "$?" != 0 ]; then
+		#build failed.
+		echo "build lfs/blfs failed."
+	fi
+
+	#strip.
+	chroot $LFS /tools/bin/env -i \
+		HOME=/root TERM=$TERM PS1='\u:\w\$ ' \
+		PATH=/bin:/usr/bin:/sbin:/usr/sbin \
+		/tools/bin/bash --login /scripts/scripts_lfs/stripall
+
+	echo "umounting ..."
+	
+	#umount
+	umount $LFS/dev/pts
+	umount $LFS/dev/shm
+	umount $LFS/proc
+	umount $LFS/sys
+	umount $LFS/dev
+	echo "[***] all done."
+
+
+}
+
+#check if root is empty. 0 means empty.
+check_root_empty()
+{
+	#first , check empty sign.
+	test -f /var/lfs/sign && return 0
+	test -d /usr && return 1
+	test -d /bin && return 1
+	test -d /sbin && return 1
+	test -d /etc && return 1
+	test -d /var && return 1
+
+	#ok, empty. add empty sign.
+	mkdir -p /var/lfs
+	touch /var/lfs/sign
+	return 0
+}
+
+
+#copy resource file. $1 is file name, $2 is final destination.
+copy_resource()
+{
+	test -f $2/$1 || cp -v $SCRIPTS_BASE/resources/$1 $2
+	err_check "[Error] copy $1 to $2 failed."
+}
+
+
+show_upgrade()
+{
+	echo "$1 -> $2"
+}
+
+#check upgrade. $1 is download URL sorted by modify time.
+# 	$2 is current package download URL
+#	$3 is "tar.gz" or "tar.bz2"
+
+check_upgrade()
+{
+	local new_ver;
+	local tmpver=~/lfsautovertmp
+	local vcur
+	local vnew
+
+	#download URL.
+	rm -f $tmpver
+	wget -O $tmpver $1  >/dev/null 2>&1
+	err_check "[Error] get homepage of `basename $2` failed."
+
+	new_ver=`sed -r "s#<[^>]+>##g" $tmpver | \
+		grep -E "\b(([0-9]+)\.)+$3[^\.]" | tail -n 1`
+	rm $tmpver
+
+	vnew=`echo $new_ver | grep -o -E "\b(([0-9]+)\.)+$3"`	
+	vnew=`basename $vnew .$3`
+
+	vcur=`basename $2`
+	vcur=`echo $vcur | grep -o -E "\b(([0-9]+)\.)+"`	
+	vcur=`basename $vcur .`
+
+	if [ $vcur != $vnew ]; then
+		#has upgrade version.
+		show_upgrade `basename $2` $vnew
+		return 0
+	else
+		return 1
+	fi
+}
+
+#Xconfig, for all X programs.
+XORG_PREFIX=/usr/X11R7
+XORG_CONFIG="--prefix=$XORG_PREFIX --sysconfdir=/etc \
+	--mandir=$XORG_PREFIX/share/man --localstatedir=/var \
+	--includedir=/usr/include \
+	--libdir=/usr/lib"
+
+
+#end of functions_pub
+
+
+
+

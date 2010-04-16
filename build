@@ -1,0 +1,70 @@
+#!/bin/bash
+
+#include functions.
+. functions_pub
+
+#check privilidge.
+if [ $UID != 0 ]; then
+	echo "Please run with root privilidge."
+	exit 1
+fi
+
+#make source, tools, and temp directory.
+mkdir -p $LFS_SOURCE
+mkdir -p $LFS_TOOLS
+mkdir -p $LFS_TEMP
+chmod 1777 $LFS_TEMP
+
+#creat symbol link at root.
+if [ -L "/tools" ]; then
+	#symbol link exists, check it.
+	ls -ld /tools | grep $LFS_TOOLS
+	if [ "$?" == 0 ]; then
+		echo "/tools check OK."
+	else
+		echo "ERROR: please remove /tools and retry."
+		exit 1
+	fi
+else
+	#symbol link does not exists, create it with sudo.
+	ln -sv $LFS_TOOLS /
+	err_check "Create symbol link /tools failed, please check privilidge."
+fi
+
+
+#check if tools build OK.
+check_tools_done_sign
+if [ "$?" == 0 ]; then
+	#tools done, build blfs.
+	#build_lfs_blfs
+	exit
+fi
+
+
+#check user lfs.
+su lfs -m -c ls >/dev/null 2>&1
+if [ "$?" != 0 ]; then
+	echo "create user lfs.."
+	useradd -s /bin/bash lfs
+fi
+
+
+#change owner of /tools to lfs.
+echo "checking owner of /tools.."
+oname=`ls -ld $LFS_TOOLS | gawk '{ print $3 }'`
+if [ "$oname" != "lfs" ]; then
+	echo "changing owner of LFS_TOOLS.."
+	chown -R lfs $LFS_TOOLS
+fi
+	
+
+
+#build tools with lfs 
+su lfs -m -c "bash scripts_tools/build"
+err_check "build tools failed."
+
+#build lfs
+#build_lfs_blfs
+
+
+#end script.

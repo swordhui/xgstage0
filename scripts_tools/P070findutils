@@ -1,0 +1,42 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=findutils-4.4.2
+PackageURL=http://ftp.gnu.org/pub/gnu/findutils/findutils-4.4.2.tar.gz
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+
+	#configure
+	./configure --prefix=/tools 
+	err_check "[Error] configure $PackageName failed."
+
+
+	#step4: make.
+	make
+	err_check "[Error] make $PackageName failed."	
+
+	make check
+	err_check "[Error] check $PackageName failed."	
+
+	#step5: install.
+	make install
+	err_check "[Error] install $PackageName failed."
+
+	 #leave.
+        package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

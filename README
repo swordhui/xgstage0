@@ -1,0 +1,14 @@
+XianGe Stage0 build scripts: build tools for XianGe Linux system.
+
+steps:
+	1. make an empty work directory, such as "/mnt/xg" or "~/xg"
+	2. decompress file to work directory
+	3. enter "stage0" of work directory
+	4. run ./download
+	5. after all packges download ok, run ./build, with root priviledge.
+	6. wait build ok
+	7. then you'll get the all tools in /tools direcotry, and a list of installed packages in /tools/installed.log
+
+
+	if you have any question or sugestion, please mail to Zhang Lihui<swordhuihui@gmail.com>
+ 

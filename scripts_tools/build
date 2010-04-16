@@ -1,0 +1,60 @@
+#!/bin/bash
+
+#public functions
+. functions_pub
+
+#download all packages.
+get_packages  ${SCRIPTS_BASE}/scripts_tools
+allpacks=$ret
+unset ret
+
+get_string_count $allpacks
+count=$ret
+unset ret
+
+#
+# prepare.
+#
+
+
+
+echo "setting up environment..."
+
+
+#setup environment.
+set +h
+umask 022
+LC_ALL=POSIX
+PATH=/tools/bin:/bin:/usr/bin
+export LC_ALL PATH
+
+echo PATH=$PATH, user=$USER
+
+i=1
+
+for dlpack in $allpacks
+do
+
+	printf "[%d/%d] build %s... \n" $i $count `basename $dlpack`
+
+	bash $dlpack build
+	if [ "$?" != 0 ]; then
+		printf "*** build %s failed.\n" `basename $dlpack`
+		exit 1
+	fi
+	i=$(($i+1))
+done
+
+#stipping debug sections.
+echo "Stripping..."
+strip --strip-debug /tools/lib/* 2>/dev/null
+strip --strip-unneeded /tools/{,s}bin/* 2>/dev/null
+rm -rf /tools/{info,man} 2>/dev/null
+
+#add done sign.
+add_tools_done_sign
+
+printf "[***] build done, packages=%d\n", $(($i-1))
+exit 0
+
+#end of script

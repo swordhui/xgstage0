@@ -1,0 +1,41 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=coreutils-7.4
+PackageURL=http://ftp.gnu.org/gnu/coreutils/coreutils-7.4.tar.gz
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+
+	./configure --prefix=/tools \
+		--enable-install-program=hostname
+	err_check "[Error] configure failed."
+
+
+	#step4: make.
+	make
+	err_check "[Error] make failed."	
+
+	#step5: install.
+	make install
+	err_check "[Error] install $PackageName failed."
+
+	cp -v src/su /tools/bin/su-tools
+
+	#leave.
+        package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

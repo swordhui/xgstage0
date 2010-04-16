@@ -1,0 +1,39 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=gawk-3.1.6
+PackageURL=http://ftp.gnu.org/gnu/gawk/gawk-3.1.6.tar.bz2
+
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+
+	#configure	
+	./configure --prefix=/tools ac_cv_func_working_mktime=yes
+	err_check "[Error] configure $PackageName failed."
+
+	#step4: make.
+	make
+	err_check "[Error] make $PackageName failed."	
+
+	#step5: install.
+	make install
+	err_check "[Error] install $PackageName failed."
+
+	#leave directory.
+	package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

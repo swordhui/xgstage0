@@ -1,0 +1,39 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=m4-1.4.13
+PackageURL=http://ftp.gnu.org/gnu/m4/m4-1.4.13.tar.bz2
+
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+
+	#configure	
+	./configure --prefix=/tools 
+	err_check "[Error] configure $PackageName failed."
+
+	#step4: make.
+	make
+	err_check "[Error] make $PackageName failed."	
+
+	#step5: install.
+	make install
+	err_check "[Error] install $PackageName failed."
+
+	#leave directory.
+	package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

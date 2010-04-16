@@ -1,0 +1,46 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=gzip-1.3.12
+PackageURL=http://ftp.gnu.org/gnu/gzip/gzip-1.3.12.tar.gz
+
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+
+	#fix futimens
+	for file in gzip.c lib/utimens.{c,h} ; 
+	do 
+		cp -v $file{,.orig}
+		sed 's/futimens/gl_&/' $file.orig > $file
+	done
+
+	#configure	
+	./configure --prefix=/tools 
+	err_check "[Error] configure $PackageName failed."
+
+	#step4: make.
+	make
+	err_check "[Error] make $PackageName failed."	
+
+	#step5: install.
+	make install
+	err_check "[Error] install $PackageName failed."
+
+	#leave directory.
+	package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

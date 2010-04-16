@@ -1,0 +1,39 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=zlib-1.2.3
+PackageURL=http://www.zlib.net/zlib-1.2.3.tar.gz
+
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+
+	#build static library.
+	make clean
+	./configure --prefix=/tools
+	err_check "[Error] configure $PackageName-static failed."
+
+	make
+	err_check "[Error] make $PackageName-static failed."	
+
+	make install
+	err_check "[Error] install $PackageName-static failed."
+
+
+	#leave directory.
+	package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

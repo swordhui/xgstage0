@@ -1,0 +1,43 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=gettext-0.17
+PackageURL=http://ftp.gnu.org/pub/gnu/gettext/gettext-0.17.tar.gz
+
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+
+	#configure	
+	cd gettext-tools
+	./configure --prefix=/tools --disable-shared
+	err_check "[Error] configure $PackageName failed."
+
+	#step4: make.
+	make -C gnulib-lib	
+	err_check "[Error] make $PackageName failed."	
+
+	make -C src msgfmt
+	err_check "[Error] make $PackageName failed."	
+
+	#step5: install.
+	cp -v src/msgfmt /tools/bin
+	err_check "[Error] install $PackageName failed."
+
+	#leave directory.
+	package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

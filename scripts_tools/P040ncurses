@@ -1,0 +1,40 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=ncurses-5.7
+PackageURL=http://ftp.gnu.org/pub/gnu/ncurses/ncurses-5.7.tar.gz
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+
+
+	./configure --prefix=/tools --with-shared \
+		--without-debug --without-ada --enable-overwrite
+	err_check "[Error] configure failed."
+
+
+	#step4: make.
+	make
+	err_check "[Error] make failed."	
+
+	#step5: install.
+	make install
+	err_check "[Error] install glibc failed."
+
+	#leave.
+        package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

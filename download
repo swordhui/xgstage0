@@ -1,0 +1,11 @@
+#!/bin/bash
+
+. functions_pub
+
+#create dir.
+mkdir -p $LFS_SOURCE
+
+#download tools.
+bash scripts_tools/download
+
+
