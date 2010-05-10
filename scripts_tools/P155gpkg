@@ -6,7 +6,7 @@
 
 . functions_pub
 
-PackageName=gpkg-0.10.6
+PackageName=gpkg-0.10.7
 PackageURL=http://xiangelinux.googlecode.com/files/$PackageName.tar.bz2
 
 
