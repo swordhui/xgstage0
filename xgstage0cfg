@@ -1,0 +1,4 @@
+# configuration files for xiange stage0 build scripts
+
+CC="gcc"
+CFLAGS=""

@@ -17,6 +17,13 @@ LFS_TEMP=${LFS}/tmp/xgstage0
 
 export LFS=${LFS}
 
+#include configuration files
+. xgstage0cfg
+
+#test configuration
+#echo "CFLAGS=$CFLAGS"
+#exit 0
+
 #get string count. parameter is an array.
 get_string_count()
 {
