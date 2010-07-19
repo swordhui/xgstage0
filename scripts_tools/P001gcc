@@ -2,14 +2,14 @@
 
 . functions_pub
 
-PackageName=gcc-4.4.0
-PackageURL=http://ftp.gnu.org/gnu/gcc/gcc-4.4.0/gcc-4.4.0.tar.bz2
+PackageName=gcc-4.4.3
+PackageURL=http://ftp.gnu.org/gnu/gcc/$PackageName/$PackageName.tar.bz2
 
-GMP_PACKNAME=gmp-4.3.1
-GMP_URL=ftp://ftp.gnu.org/gnu/gmp/gmp-4.3.1.tar.bz2
+GMP_PACKNAME=gmp-4.3.2
+GMP_URL=ftp://ftp.gnu.org/gnu/gmp/$GMP_PACKNAME.tar.bz2
 
-MPFR_PACKNAME=mpfr-2.4.1
-MPFR_URL=http://www.mpfr.org/mpfr-2.4.1/mpfr-2.4.1.tar.bz2
+MPFR_PACKNAME=mpfr-2.4.2
+MPFR_URL=http://www.mpfr.org/$MPFR_PACKNAME/$MPFR_PACKNAME.tar.bz2
 
 
 case "${1}" in

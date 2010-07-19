@@ -23,7 +23,6 @@ build)
 	cd $LFS_TEMP/build
 	err_check "[Error] glibc: create build directory failed."
 
-	echo "CFLAGS += -march=i686 -mtune=native" > configparms
 	../$PackageName/configure --prefix=/tools \
 		--disable-profile --enable-add-ons \
 		--enable-kernel=2.6.0 --with-binutils=/tools/bin \
