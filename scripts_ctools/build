@@ -1,10 +1,11 @@
 #!/bin/bash
 
+#set sign for cross tools.
+export LFSSIGN="ctools"
+
 #public functions
 . functions_pub
 
-#set sign for cross tools.
-export LFSSIGN="ctools"
 
 #download all packages.
 get_packages  ${SCRIPTS_BASE}/scripts_ctools
@@ -54,7 +55,7 @@ strip --strip-unneeded /tools/{,s}bin/* 2>/dev/null
 rm -rf /tools/{info,man} 2>/dev/null
 
 #add done sign.
-add_tools_done_sign
+#add_tools_done_sign
 
 printf "[***] build done, packages=%d\n", $(($i-1))
 exit 0

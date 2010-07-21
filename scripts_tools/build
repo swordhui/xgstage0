@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#public functions
-. functions_pub
-
 #sign for tools
 export LFSSIGN="tools"
+
+#public functions
+. functions_pub
 
 #download all packages.
 get_packages  ${SCRIPTS_BASE}/scripts_tools
