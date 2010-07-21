@@ -1,0 +1,44 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=ncurses-5.7
+PackageURL=http://ftp.gnu.org/pub/gnu/ncurses/$PackageName.tar.gz
+
+
+case "${1}" in
+download)
+	#download package from URL.
+	check_and_download $PackageURL
+	;;
+build)
+
+	#step0: unpack.
+	unpack_and_enter $PackageName $PackageURL
+
+	#step1: configure.
+	./configure --prefix=/cross-tools \
+		--without-debug --without-shared
+	err_check "configure $PackageName failed."
+
+	#step2: make
+	make -C include
+	err_check "make $PackageName failed."
+
+	make -C progs tic
+	err_check "make $PackageName failed."
+
+	#step3: install
+	install -m755 progs/tic /cross-tools/bin
+	err_check "install $PackageName failed."
+
+	#leave.
+	package_leave $PackageName $PackageURL
+	;;
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

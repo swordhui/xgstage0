@@ -1,0 +1,44 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=mpfr-2.4.2
+PackageURL=http://www.mpfr.org/$PackageName/$PackageName.tar.bz2
+
+
+
+
+case "${1}" in
+download)
+	#download package from URL.
+	check_and_download $PackageURL
+	;;
+build)
+
+	#step0: unpack.
+	unpack_and_enter $PackageName $PackageURL
+
+	#step1: configure.
+	LDFLAGS="-Wl,-rpath,/cross-tools/lib" \
+	./configure --prefix=/cross-tools \
+	    --enable-shared --with-gmp=/cross-tools
+	err_check "configure $PackageName failed."
+
+	#step2: make
+	make
+	err_check "make $PackageName failed."
+
+	#step3: install
+	make install
+	err_check "install $PackageName failed."
+
+	#leave.
+	package_leave $PackageName $PackageURL
+	;;
+*)
+	exit 1
+	;;
+esac
+
+#end 
+
