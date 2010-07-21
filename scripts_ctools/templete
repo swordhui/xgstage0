@@ -1,0 +1,40 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=ncurses-5.7
+PackageURL=http://ftp.gnu.org/pub/gnu/ncurses/ncurses-5.7.tar.gz
+
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+
+	#configure	
+	./configure --prefix=/tools --with-shared \
+		--without-debug --without-ada --enable-overwrite
+	err_check "[Error] configure $PackageName failed."
+
+	#step4: make.
+	make
+	err_check "[Error] make $PackageName failed."	
+
+	#step5: install.
+	make install
+	err_check "[Error] install $PackageName failed."
+
+	#leave directory.
+	package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

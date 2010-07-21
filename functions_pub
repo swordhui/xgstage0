@@ -12,6 +12,7 @@ SCRIPTS_BASE=`pwd`
 #root of lfs.
 LFS=${SCRIPTS_BASE}/..
 LFS_TOOLS=${LFS}/tools
+LFS_CTOOLS=${LFS}/cross-tools
 LFS_SOURCE=${LFS}/var/xiange/sources
 LFS_TEMP=${LFS}/tmp/xgstage0
 
@@ -86,9 +87,9 @@ check_and_download()
 }
 
 #add tool $1 to tools directory.
-if [ "$LFSSIGN" == "lfs_chroot" ]; then
-	#in lfs or blfs
-	tools_logfile=/var/lfs/installed.log
+if [ "$LFSSIGN" == "ctools" ]; then
+	#build cross tools
+	tools_logfile=/cross-tools/installed.log
 else
 	#when building tools
 	tools_logfile=/tools/installed.log
@@ -132,11 +133,11 @@ check_tools_done_sign()
 	
 	if [ "$?" == 0 ]; then
 		#done.
-		echo "lfs tools build ok."
+		#echo "lfs tools build ok."
 		return 0
 	else
 		#not installed.
-		echo "lfs tools build not ok, continue"
+		#echo "lfs tools build not ok, continue"
 		return 1;
 	fi
 	
@@ -315,13 +316,6 @@ check_upgrade()
 		return 1
 	fi
 }
-
-#Xconfig, for all X programs.
-XORG_PREFIX=/usr/X11R7
-XORG_CONFIG="--prefix=$XORG_PREFIX --sysconfdir=/etc \
-	--mandir=$XORG_PREFIX/share/man --localstatedir=/var \
-	--includedir=/usr/include \
-	--libdir=/usr/lib"
 
 
 #end of functions_pub

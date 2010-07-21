@@ -12,10 +12,44 @@ fi
 #make source, tools, and temp directory.
 mkdir -p $LFS_SOURCE
 mkdir -p $LFS_TOOLS
+mkdir -p $LFS_CTOOLS
 mkdir -p $LFS_TEMP
 chmod 1777 $LFS_TEMP
 
-#creat symbol link at root.
+#check the size of tmpfs.
+tmpsize=$(df | grep tmpfs | gawk '{print $4}')
+tmploc=$(df | grep tmpfs | gawk '{print $6}')
+echo "free tmpfs: ${tmpsize}K"
+if [ $tmpsize -lt 3000000 ]; then
+	echo "free tmpfs is not enought (3G), disabled."
+else
+	echo "free tmpfs OK, enable it"
+	mkdir -p ${tmploc}/xg0tmp
+	err_check "Create dir ${tmploc}/xg0tmp failed"
+
+	umount $LFS_TEMP
+	mount --bind ${tmploc}/xg0tmp $LFS_TEMP
+	err_check "mount $LFS_TEMP to ${tmploc}/xg0tmp failed"
+fi
+
+
+#creat symbol link at root.(ctools)
+if [ -L "/cross-tools" ]; then
+	#symbol link exists, check it.
+	ls -ld /cross-tools | grep $LFS_CTOOLS
+	if [ "$?" == 0 ]; then
+		echo "/cross-tools check OK."
+	else
+		echo "ERROR: please remove /cross-tools and retry."
+		exit 1
+	fi
+else
+	#symbol link does not exists, create it with sudo.
+	ln -sv $LFS_CTOOLS /
+	err_check "Create symbol link /cross-tools failed, please check privilidge."
+fi
+
+#creat symbol link at root. (tools)
 if [ -L "/tools" ]; then
 	#symbol link exists, check it.
 	ls -ld /tools | grep $LFS_TOOLS
@@ -35,36 +69,71 @@ fi
 #check if tools build OK.
 check_tools_done_sign
 if [ "$?" == 0 ]; then
-	#tools done, build blfs.
-	#build_lfs_blfs
-	exit
+	#tools done, finish.
+	echo ">>> tools have already done."
+	exit 0
 fi
-
 
 #check user lfs.
 su lfs -m -c ls >/dev/null 2>&1
 if [ "$?" != 0 ]; then
 	echo "create user lfs.."
 	useradd -s /bin/bash lfs
+else
+	echo "user lfs check OK"
 fi
 
 
-#change owner of /tools to lfs.
-echo "checking owner of /tools.."
-oname=`ls -ld $LFS_TOOLS | gawk '{ print $3 }'`
-if [ "$oname" != "lfs" ]; then
-	echo "changing owner of LFS_TOOLS.."
-	chown -R lfs $LFS_TOOLS
+#build cross-tools
+build_ctools()
+{
+	#change owner of /cross-tools to lfs.
+	echo "checking owner of /cross-tools.."
+	oname=`ls -ld $LFS_CTOOLS | gawk '{ print $3 }'`
+	if [ "$oname" != "lfs" ]; then
+		echo "changing owner of LFS_CTOOLS.."
+		chown -R lfs $LFS_CTOOLS
+	fi
+
+
+
+	#build tools with lfs 
+	su lfs -m -c "bash scripts_ctools/build"
+	err_check "build ctools failed."
+}
+
+
+#build tools
+build_tools()
+{
+	#change owner of /tools to lfs.
+	echo "checking owner of /tools.."
+	oname=`ls -ld $LFS_TOOLS | gawk '{ print $3 }'`
+	if [ "$oname" != "lfs" ]; then
+		echo "changing owner of LFS_TOOLS.."
+		chown -R lfs $LFS_TOOLS
+	fi
+
+
+
+	#build tools with lfs 
+	su lfs -m -c "bash scripts_tools/build"
+	err_check "build tools failed."
+}
+
+#check if ctools build OK.
+echo ">>> checking ctools ..."
+tools_logfile=/cross-tools/installed.log
+check_tools_done_sign
+if [ "$?" == 0 ]; then
+	#cross-tools done, build tools.
+	echo ">>> ctools have already done, build tools..."
+	build_tools
+	exit 0
+else
+	echo ">>> Not OK, building ctools..."
+	#ctools not done, build ctools
+	build_ctools
 fi
-	
-
-
-#build tools with lfs 
-su lfs -m -c "bash scripts_tools/build"
-err_check "build tools failed."
-
-#build lfs
-#build_lfs_blfs
-
 
 #end script.

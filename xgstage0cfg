@@ -1,4 +1,13 @@
 # configuration files for xiange stage0 build scripts
 
-CC="gcc"
-CFLAGS=""
+export CC="gcc"
+export CFLAGS=""
+
+#cross compile building platform (autodetect)
+CLFS_BUILD="$MACHTYPE"
+
+#cross compile host/target platform (mips,little endian)
+CLFS_TARGET="mipsel-unknown-linux-gnu"
+
+#ABI
+export MABI="n32"

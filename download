@@ -5,7 +5,13 @@
 #create dir.
 mkdir -p $LFS_SOURCE
 
+#download ctools.
+echo ">>> downloading cross-tools..."
+bash scripts_ctools/download
+echo ""
+
+
 #download tools.
+echo ">>> downloading tools..."
 bash scripts_tools/download
-
-
+echo ""

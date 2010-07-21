@@ -1,0 +1,62 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=binutils-2.19.1
+PackageURL=http://ftp.gnu.org/gnu/binutils/binutils-2.19.1.tar.bz2
+#PackageURL=http://nmap.org/dist/nmap-4.90RC1.tar.bz2
+#PackageURL=http://internap.dl.sourceforge.net/sourceforge/netcat/netcat-0.7.1.tar.bz2
+
+
+case "${1}" in
+download)
+	#download package from URL.
+	check_and_download $PackageURL
+	;;
+build)
+	#testing.
+
+	echo ">>>> Testing ..."
+	echo "logfile=$tools_logfile"
+	echo ""
+
+
+	#step0: unpack.
+	unpack_and_enter $PackageName $PackageURL
+
+	#step1: configure.
+	mkdir -p ../build
+	err_check "[Error] Binutils: Create build directory failed."
+
+	cd ../build
+	err_check "[Error] Binutils: enter build directory failed."
+
+	../$PackageName/configure --prefix=/tools --disable-nls --disable-werror
+	err_check "[Error] configure failed."
+
+	#step4: make.
+	make
+	err_check "[Error] make failed."
+	
+	#step5: install
+	make install
+	err_check "[Error] install failed."
+
+
+	#step6: adjust tool chain.
+	make -C ld clean
+	make -C ld LIB_PATH=/tools/lib
+	err_check "[Error] binutils: build new lib failed."
+	cp -v ld/ld-new /tools/bin	
+	err_check "[Error] binutils: create symbal link failed."
+
+	#leave.
+	package_leave $PackageName $PackageURL
+	;;
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

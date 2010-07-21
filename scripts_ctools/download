@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#public functions
+. functions_pub
+
+#download all packages.
+get_packages  ${SCRIPTS_BASE}/scripts_ctools
+allpacks=$ret
+unset ret
+
+get_string_count $allpacks
+count=$ret
+unset ret
+
+
+i=1
+failed=0;
+
+for dlpack in $allpacks
+do
+	printf "[%d/%d] downloading %s... \n" $i $count `basename $dlpack`
+	bash $dlpack download
+	if [ "$?" != 0 ]; then
+		echo $dlpack >> $LFS_SOURCE/download_failed.log
+		failed=$(($failed+1))
+	fi
+	i=$(($i+1))
+done
+
+printf "[***] done, all=%d, failed=%d\n" $(($i-1)) $failed
+
+
+
+
+

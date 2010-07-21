@@ -3,11 +3,11 @@
 #public functions
 . functions_pub
 
-#sign for tools
-export LFSSIGN="tools"
+#set sign for cross tools.
+export LFSSIGN="ctools"
 
 #download all packages.
-get_packages  ${SCRIPTS_BASE}/scripts_tools
+get_packages  ${SCRIPTS_BASE}/scripts_ctools
 allpacks=$ret
 unset ret
 
