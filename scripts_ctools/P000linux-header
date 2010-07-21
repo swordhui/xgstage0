@@ -1,0 +1,44 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=linux-2.6.32.11
+PackageURL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.32.11.tar.bz2
+
+
+
+
+case "${1}" in
+download)
+	#download package from URL.
+	check_and_download $PackageURL
+	;;
+build)
+
+	#step0: unpack.
+	unpack_and_enter $PackageName $PackageURL
+
+	#step1: configure.
+	make mrproper
+	make ARCH=mips headers_check
+	make ARCH=mips INSTALL_HDR_PATH=dest headers_install
+	err_check "install header failed."
+
+
+	#step2: install
+	install -dv /tools/include
+	err_check "install header failed."
+
+	cp -rv dest/include/* /tools/include
+	err_check "copy header files failed."
+
+	#leave.
+	package_leave $PackageName $PackageURL
+	;;
+*)
+	exit 1
+	;;
+esac
+
+#end 
+
