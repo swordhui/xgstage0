@@ -95,6 +95,13 @@ build_ctools()
 		chown -R lfs $LFS_CTOOLS
 	fi
 
+	#change owner of /tools to lfs.
+	echo "checking owner of /tools.."
+	oname=`ls -ld $LFS_TOOLS | gawk '{ print $3 }'`
+	if [ "$oname" != "lfs" ]; then
+		echo "changing owner of LFS_TOOLS.."
+		chown -R lfs $LFS_TOOLS
+	fi
 
 
 	#build tools with lfs 
@@ -106,15 +113,6 @@ build_ctools()
 #build tools
 build_tools()
 {
-	#change owner of /tools to lfs.
-	echo "checking owner of /tools.."
-	oname=`ls -ld $LFS_TOOLS | gawk '{ print $3 }'`
-	if [ "$oname" != "lfs" ]; then
-		echo "changing owner of LFS_TOOLS.."
-		chown -R lfs $LFS_TOOLS
-	fi
-
-
 
 	#build tools with lfs 
 	su lfs -m -c "bash scripts_tools/build"
