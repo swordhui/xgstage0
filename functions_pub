@@ -21,6 +21,9 @@ export LFS=${LFS}
 #include configuration files
 . xgstage0cfg
 
+#fixbug: use old software always..
+set +h
+
 #test configuration
 #echo "CFLAGS=$CFLAGS"
 #exit 0

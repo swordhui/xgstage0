@@ -1,0 +1,50 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=cloog-ppl-0.15.7
+PackageURL="ftp://gcc.gnu.org/pub/gcc/infrastructure/$PackageName.tar.gz"
+
+
+
+
+case "${1}" in
+download)
+	#download package from URL.
+	check_and_download $PackageURL
+	;;
+build)
+	#step0: unpack.
+	unpack_and_enter $PackageName $PackageURL
+
+	#step1: configure.
+
+	cp -v configure{,.orig}
+	err_check "patch $PackageName failed."
+
+	sed "/LD_LIBRARY_PATH=/d" configure.orig > configure
+	err_check "patch $PackageName failed."
+
+	LDFLAGS="-Wl,-rpath,/cross-tools/lib" \
+    	./configure --prefix=/cross-tools --enable-shared --with-bits=gmp \
+        --with-gmp=/cross-tools --with-ppl=/cross-tools
+	err_check "configure $PackageName failed."
+
+	#step2: make
+	make
+	err_check "make $PackageName failed."
+
+	#step3: install
+	make install
+	err_check "install $PackageName failed."
+
+	#leave.
+	package_leave $PackageName $PackageURL
+	;;
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

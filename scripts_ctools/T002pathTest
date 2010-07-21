@@ -1,0 +1,63 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=ppl-0.10.2
+PackageURL="http://www.cs.unipr.it/ppl/Download/ftp/releases/0.10.2/ppl-0.10.2.tar.bz2"
+
+
+
+
+case "${1}" in
+download)
+	#download package from URL.
+	check_and_download $PackageURL
+	;;
+build)
+
+	echo "Parameters:"
+	echo "Path=$PATH"
+	echo ">> ls test.."
+	rm /cross-tools/bin/ls
+
+	ls
+
+	echo ">> new ls test.."
+	echo "#!/bin/bash" > /cross-tools/bin/ls
+	echo "echo NewLS" >> /cross-tools/bin/ls
+	chmod a+x /cross-tools/bin/ls
+
+	ls
+	echo ">> Done"
+
+	exit 0
+
+	#step0: unpack.
+	unpack_and_enter $PackageName $PackageURL
+
+	#step1: configure.
+	LDFLAGS="-Wl,-rpath,/cross-tools/lib" \
+		 ./configure --prefix=/cross-tools --enable-shared \
+		 --enable-interfaces="c,cxx" --disable-optimization \
+		 --with-libgmp-prefix=/cross-tools \
+		 --with-libgmpxx-prefix=/cross-tools
+	err_check "configure $PackageName failed."
+
+	#step2: make
+	make
+	err_check "make $PackageName failed."
+
+	#step3: install
+	make install
+	err_check "install $PackageName failed."
+
+	#leave.
+	package_leave $PackageName $PackageURL
+	;;
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

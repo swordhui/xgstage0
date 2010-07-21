@@ -29,7 +29,8 @@ echo "setting up environment..."
 set +h
 umask 022
 LC_ALL=POSIX
-export LC_ALL 
+PATH=/cross-tools/bin:/bin:/usr/bin
+export LC_ALL PATH
 
 echo PATH=$PATH, user=$USER
 
