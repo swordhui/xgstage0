@@ -1,0 +1,47 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=binutils-2.20
+PackageURL=http://ftp.gnu.org/pub/gnu/binutils/binutils-2.20.tar.bz2
+
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+	patch -Np1 -i $LFS_SOURCE/binutils-2.20-branch_update-1.patch
+	mkdir -v ../binutils-build
+	cd ../binutils-build
+
+	#configure	
+	AR=ar AS=as ../$PackageName/configure \
+	--prefix=/cross-tools --host=${CLFS_HOST} --target=${CLFS_TARGET} \
+	--with-sysroot=${CLFS} --with-lib-path=/tools/lib --disable-nls --enable-shared \
+	--disable-multilib
+	err_check "[Error] configure $PackageName failed."
+
+	#step4: make.
+	make configure-host
+	make
+	err_check "[Error] make $PackageName failed."	
+
+	#step5: install.
+	make install
+	cp -v ../$PackageName/include/libiberty.h /tools/include
+	err_check "[Error] install $PackageName failed."
+
+	#leave directory.
+	package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+
