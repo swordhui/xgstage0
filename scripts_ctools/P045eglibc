@@ -1,0 +1,58 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=eglibc-2.10.1
+PackageURL=http://www.lemote.com/upfiles/eglibc-2.10.1.tar.bz2
+Package_portsURL=http://zdbr.net.cn/download/eglibc-ports-2.10.1.tar.bz2
+
+
+case "${1}" in
+download)
+	check_and_download $PackageURL $Package_portsURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+	tar xjpf $LFS_SOURCE/eglibc-ports-2.10.1.tar.bz2 -C $LFS_TEMP/$PackageName
+	
+	#configure	
+	cp -v Makeconfig{,.orig}
+	sed -e 's/-lgcc_eh//g' Makeconfig.orig > Makeconfig
+	mkdir -v ../eglibc-build
+	cd ../eglibc-build
+
+cat > config.cache << "EOF"
+libc_cv_forced_unwind=yes
+libc_cv_c_cleanup=yes
+libc_cv_gnu89_inline=yes
+EOF
+	BUILD_CC="gcc" CC="${CLFS_TARGET}-gcc" \
+	AR="${CLFS_TARGET}-ar" RANLIB="${CLFS_TARGET}-ranlib" \
+	../$PackageName/configure --prefix=/tools \
+	--host=${CLFS_TARGET} --build=${CLFS_HOST} \
+	--disable-profile --enable-add-ons \
+	--with-tls --enable-kernel=2.6.0 --with-__thread \
+	--with-binutils=/cross-tools/bin --with-headers=/tools/include \
+	--cache-file=config.cache
+	err_check "[Error] configure $PackageName failed."
+
+	#step4: make.
+	make
+	err_check "[Error] make $PackageName failed."	
+
+	#step5: install.
+	make install
+	err_check "[Error] install $PackageName failed."
+
+	#leave directory.
+	package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+
