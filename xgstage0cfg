@@ -10,4 +10,5 @@ CLFS_BUILD="$MACHTYPE"
 CLFS_TARGET="mipsel-unknown-linux-gnu"
 
 #ABI
-export MABI="n32"
+export ABI="32"
+#export MABI="n32"
