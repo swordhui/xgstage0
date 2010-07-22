@@ -1,0 +1,57 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=gcc-4.4.2
+PackageURL=http://ftp.gnu.org/pub/gnu/gcc/gcc-4.4.2/gcc-4.4.2.tar.bz2
+
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+	patch -Np1 -i $LFS_SOURCE/gcc-4.4.2-branch_update-1.patch
+	patch -Np1 -i $LFS_SOURCE/gcc-4.4.2-specs-1.patch
+	echo -en '#undef STANDARD_INCLUDE_DIR\n#define STANDARD_INCLUDE_DIR "/tools/include/"\n\n' >> gcc/config/linux.h
+	echo -en '\n#undef STANDARD_STARTFILE_PREFIX_1\n#define STANDARD_STARTFILE_PREFIX_1 "/tools/lib/"\n' >> gcc/config/linux.h
+	echo -en '\n#undef STANDARD_STARTFILE_PREFIX_2\n#define STANDARD_STARTFILE_PREFIX_2 ""\n' >> gcc/config/linux.h
+	cp -v gcc/Makefile.in{,.orig}
+	sed -e "s@\(^CROSS_SYSTEM_HEADER_DIR =\).*@\1 /tools/include@g" \
+	    gcc/Makefile.in.orig > gcc/Makefile.in
+	mkdir -v ../gcc-build
+	cd ../gcc-build
+
+	#configure	
+	AR=ar LDFLAGS="-Wl,-rpath,/cross-tools/lib" \
+	../$PackageName/configure --prefix=/cross-tools \
+	--build=${CLFS_HOST} --target=${CLFS_TARGET} --host=${CLFS_HOST} \
+	--with-sysroot=${CLFS} --with-local-prefix=/tools --disable-nls \
+	--enable-shared --enable-languages=c,c++ --enable-__cxa_atexit \
+	--with-mpfr=/cross-tools --with-gmp=/cross-tools --enable-c99 \
+	--with-ppl=/cross-tools --with-cloog=/cross-tools \
+	--enable-long-long --enable-threads=posix --disable-multilib
+	err_check "[Error] configure $PackageName failed."
+
+	#step4: make.
+	make AS_FOR_TARGET="${CLFS_TARGET}-as" \
+        LD_FOR_TARGET="${CLFS_TARGET}-ld"
+	err_check "[Error] make $PackageName failed."	
+
+	#step5: install.
+	make install
+	err_check "[Error] install $PackageName failed."
+
+	#leave directory.
+	package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+
