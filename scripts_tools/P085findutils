@@ -2,8 +2,8 @@
 
 . functions_pub
 
-PackageName=
-PackageURL=
+PackageName=findutils-4.4.2
+PackageURL=http://ftp.gnu.org/gnu/findutils/findutils-4.4.2.tar.gz
 
 
 case "${1}" in
@@ -12,12 +12,17 @@ download)
 	;;
 build)
 	#step0: unpack.
-        unpack_and_enter $PackageName $PackageURL
+        #unpack_and_enter $PackageName $PackageURL
+	tar zxf $LFS_TEMP/$PackageName
+        cd $PackageName
 	#patch -Np1 -i $LFS_SOURCE/ncurses-5.7-bash_fix-1.patch
 
 	#configure	
-	./configure --prefix=/tools --with-shared \
-		--without-debug --without-ada --enable-overwrite
+	echo "gl_cv_func_wcwidth_works=yes" > config.cache
+	echo "ac_cv_func_fnmatch_gnu=yes" >> config.cache
+	./configure --prefix=/tools \
+	--build=${CLFS_HOST} --host=${CLFS_TARGET} \
+	--cache-file=config.cache
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.

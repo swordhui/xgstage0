@@ -1,0 +1,57 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=vim-7.2
+PackageURL=ftp://ftp.vim.org/pub/vim/unix/vim-7.2.tar.bz2
+
+
+case "${1}" in
+download)
+	check_and_download $PackageURL
+	;;
+build)
+	#step0: unpack.
+        unpack_and_enter $PackageName $PackageURL
+	patch -Np1 -i $LFS_SOURCE/vim-7.2-branch_update-21.patch
+
+	#configure	
+cat > src/auto/config.cache << "EOF"
+vim_cv_getcwd_broken=no
+vim_cv_memmove_handles_overlap=yes
+vim_cv_stat_ignores_slash=no
+vim_cv_terminfo=yes
+vim_cv_tgent=zero
+vim_cv_toupper_broken=no
+vim_cv_tty_group=world
+ac_cv_sizeof_int=4
+EOF
+	echo '#define SYS_VIMRC_FILE "/tools/etc/vimrc"' >> src/feature.h
+	CPPFLAGS="-DUNUSED=" ./configure \
+	--build=${CLFS_HOST} --host=${CLFS_TARGET} \
+	--prefix=/tools --enable-multibyte --enable-gui=no \
+	--disable-gtktest --disable-xim --with-features=normal \
+	--disable-gpm --without-x --disable-netbeans \
+	--with-tlib=ncurses
+	err_check "[Error] configure $PackageName failed."
+
+	#step4: make.
+	make
+	err_check "[Error] make $PackageName failed."	
+
+	#step5: install.
+	make install
+	ln -sv vim /tools/bin/vi
+	err_check "[Error] install $PackageName failed."
+
+	#leave directory.
+	package_leave $PackageName $PackageURL
+	;;
+
+*)
+	exit 1
+	;;
+esac
+
+#end 
+

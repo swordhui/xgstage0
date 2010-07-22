@@ -2,8 +2,8 @@
 
 . functions_pub
 
-PackageName=
-PackageURL=
+PackageName=bzip2-1.0.5
+PackageURL=http://www.bzip.org/1.0.5/bzip2-1.0.5.tar.gz
 
 
 case "${1}" in
@@ -13,19 +13,18 @@ download)
 build)
 	#step0: unpack.
         unpack_and_enter $PackageName $PackageURL
-	#patch -Np1 -i $LFS_SOURCE/ncurses-5.7-bash_fix-1.patch
 
 	#configure	
-	./configure --prefix=/tools --with-shared \
-		--without-debug --without-ada --enable-overwrite
+	cp -v Makefile{,.orig}
+	sed -e 's@^\(all:.*\) test@\1@g' Makefile.orig > Makefile
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.
-	make
+	make CC="${CC}" AR="${AR}" RANLIB="${RANLIB}"
 	err_check "[Error] make $PackageName failed."	
 
 	#step5: install.
-	make install
+	make PREFIX=/tools install
 	err_check "[Error] install $PackageName failed."
 
 	#leave directory.

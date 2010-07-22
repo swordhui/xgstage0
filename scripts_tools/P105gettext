@@ -2,8 +2,8 @@
 
 . functions_pub
 
-PackageName=
-PackageURL=
+PackageName=gettext-0.17
+PackageURL=http://ftp.gnu.org/gnu/gettext/gettext-0.17.tar.gz
 
 
 case "${1}" in
@@ -13,19 +13,23 @@ download)
 build)
 	#step0: unpack.
         unpack_and_enter $PackageName $PackageURL
-	#patch -Np1 -i $LFS_SOURCE/ncurses-5.7-bash_fix-1.patch
 
 	#configure	
-	./configure --prefix=/tools --with-shared \
-		--without-debug --without-ada --enable-overwrite
+	cd gettext-tools
+	echo "gl_cv_func_wcwidth_works=yes" > config.cache
+	./configure --prefix=/tools \
+	--build=${CLFS_HOST} --host=${CLFS_TARGET} \
+	--disable-shared --cache-file=config.cache
+
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.
-	make
+	make -C gnulib-lib
+	make -C src msgfmt
 	err_check "[Error] make $PackageName failed."	
 
 	#step5: install.
-	make install
+	cp -v src/msgfmt /tools/bin
 	err_check "[Error] install $PackageName failed."
 
 	#leave directory.

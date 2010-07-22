@@ -2,8 +2,8 @@
 
 . functions_pub
 
-PackageName=
-PackageURL=
+PackageName=gzip-1.3.12
+PackageURL=http://ftp.gnu.org/gnu/gzip/gzip-1.3.12.tar.gz
 
 
 case "${1}" in
@@ -13,11 +13,14 @@ download)
 build)
 	#step0: unpack.
         unpack_and_enter $PackageName $PackageURL
-	#patch -Np1 -i $LFS_SOURCE/ncurses-5.7-bash_fix-1.patch
 
 	#configure	
-	./configure --prefix=/tools --with-shared \
-		--without-debug --without-ada --enable-overwrite
+	for file in $(grep -lr futimens *); do
+	  cp -v ${file}{,.orig}
+	  sed -e "s/futimens/gl_&/" ${file}.orig > ${file}
+	done
+	./configure --prefix=/tools \
+	--build=${CLFS_HOST} --host=${CLFS_TARGET}
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.
