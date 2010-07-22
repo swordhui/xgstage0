@@ -2,8 +2,8 @@
 
 . functions_pub
 
-PackageName=ncurses-5.7
-PackageURL=http://ftp.gnu.org/pub/gnu/ncurses/ncurses-5.7.tar.gz
+PackageName=gmp-4.3.2
+PackageURL=ftp://ftp.gnu.org/gnu/gmp/$PackageName.tar.bz2
 
 
 case "${1}" in
@@ -13,13 +13,11 @@ download)
 build)
 	#step0: unpack.
         unpack_and_enter $PackageName $PackageURL
-	#tar zxf $LFS_TEMP/$PackageName
-        #cd $PackageName
-	#patch -Np1 -i $LFS_SOURCE/ncurses-5.7-bash_fix-1.patch
 
 	#configure	
-	./configure --prefix=/tools --with-shared \
-		--without-debug --without-ada --enable-overwrite
+	HOST_CC=gcc CPPFLAGS=-fexceptions ./configure --prefix=/tools \
+	--build=${CLFS_HOST} --host=${CLFS_TARGET} \
+	--enable-cxx
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.

@@ -2,8 +2,8 @@
 
 . functions_pub
 
-PackageName=ncurses-5.7
-PackageURL=http://ftp.gnu.org/pub/gnu/ncurses/ncurses-5.7.tar.gz
+PackageName=zlib-1.2.5
+PackageURL=http://www.zlib.net/zlib-1.2.5.tar.gz
 
 
 case "${1}" in
@@ -13,13 +13,9 @@ download)
 build)
 	#step0: unpack.
         unpack_and_enter $PackageName $PackageURL
-	#tar zxf $LFS_TEMP/$PackageName
-        #cd $PackageName
-	#patch -Np1 -i $LFS_SOURCE/ncurses-5.7-bash_fix-1.patch
 
 	#configure	
-	./configure --prefix=/tools --with-shared \
-		--without-debug --without-ada --enable-overwrite
+	./configure --prefix=/tools
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.

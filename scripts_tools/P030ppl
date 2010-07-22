@@ -1,0 +1,45 @@
+#!/bin/bash
+
+. functions_pub
+
+PackageName=ppl-0.10.2
+PackageURL="http://www.cs.unipr.it/ppl/Download/ftp/releases/0.10.2/ppl-0.10.2.tar.bz2"
+
+
+
+
+case "${1}" in
+download)
+	#download package from URL.
+	check_and_download $PackageURL
+	;;
+build)
+
+	#step0: unpack.
+	unpack_and_enter $PackageName $PackageURL
+
+	#step1: configure.
+	./configure --prefix=/tools \
+	--build=${CLFS_HOST} --host=${CLFS_TARGET} \
+	--enable-interfaces="c,cxx" --enable-shared --disable-optimization \
+	--with-libgmp-prefix=/tools --with-libgmpxx-prefix=/tools
+	err_check "configure $PackageName failed."
+
+	#step2: make
+	make
+	err_check "make $PackageName failed."
+
+	#step3: install
+	make install
+	err_check "install $PackageName failed."
+
+	#leave.
+	package_leave $PackageName $PackageURL
+	;;
+*)
+	exit 1
+	;;
+esac
+
+#end 
+
