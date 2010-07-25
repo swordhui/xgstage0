@@ -12,7 +12,7 @@ download)
 	;;
 build)
 	#step0: unpack.
-        unpack_and_enter $PackageName $PackageURL
+        unpack_and_enter $PackageName $PackageURL -pass2
 	patch -Np1 -i $LFS_SOURCE/gcc-4.4.2-branch_update-1.patch
 	patch -Np1 -i $LFS_SOURCE/gcc-4.4.2-specs-1.patch
 	echo -en '#undef STANDARD_INCLUDE_DIR\n#define STANDARD_INCLUDE_DIR "/tools/include/"\n\n' >> gcc/config/linux.h
@@ -45,7 +45,7 @@ build)
 	err_check "[Error] install $PackageName failed."
 
 	#leave directory.
-	package_leave $PackageName $PackageURL
+	package_leave $PackageName $PackageURL -pass2
 	;;
 
 *)
