@@ -126,12 +126,12 @@ check_tools_done_sign
 if [ "$?" == 0 ]; then
 	#cross-tools done, build tools.
 	echo ">>> ctools have already done, build tools..."
-	#build_tools
+	build_tools
 	exit 0
 else
 	echo ">>> Not OK, building ctools..."
 	#ctools not done, build ctools
-	build_ctools
+	build_tools
 fi
 
 #end script.
