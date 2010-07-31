@@ -17,7 +17,8 @@ build)
 	unpack_and_enter $PackageName $PackageURL
 
 	#step1: configure.
-	CPPFLAGS=-fexceptions ./configure \
+	CPPFLAGS=-fexceptions ABI=32 \
+	./configure \
 		--prefix=/cross-tools --enable-cxx
 	err_check "configure $PackageName failed."
 
