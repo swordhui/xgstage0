@@ -2,23 +2,29 @@
 
 . functions_pub
 
-PackageName=eglibc-2.10.1
-PackageURL=http://www.lemote.com/upfiles/eglibc-2.10.1.tar.bz2
-Package_portsURL=http://zdbr.net.cn/download/eglibc-ports-2.10.1.tar.bz2
+PackageName=eglibc-2.12
+PackageURL=http://xiangelinux.googlecode.com/files/eglibc-2.12-20100729-r11028.tar.bz2
+Package_portsURL=http://xiangelinux.googlecode.com/files/eglibc-ports-2.12-20100729-r11028.tar.bz2
 
 
 case "${1}" in
 download)
-	check_and_download $PackageURL $Package_portsURL
+	check_and_download $PackageURL 
+	check_and_download $Package_portsURL
 	;;
 build)
 	#step0: unpack.
         unpack_and_enter $PackageName $PackageURL
-	tar xjpf $LFS_SOURCE/eglibc-ports-2.10.1.tar.bz2 -C $LFS_TEMP/$PackageName
+
+	echo "ok, unpress eglibc port.."
+	tar xpf $LFS_SOURCE/$(basename $Package_portsURL)
+	err_check "[Error] uncompress patch failed."
 	
 	#configure	
 	cp -v Makeconfig{,.orig}
 	sed -e 's/-lgcc_eh//g' Makeconfig.orig > Makeconfig
+	err_check "[Error] patch patch failed."
+
 	mkdir -v ../eglibc-build
 	cd ../eglibc-build
 
@@ -26,15 +32,20 @@ cat > config.cache << "EOF"
 libc_cv_forced_unwind=yes
 libc_cv_c_cleanup=yes
 libc_cv_gnu89_inline=yes
+libc_cv_ssp=no
 EOF
+
+
 	BUILD_CC="gcc" CC="${CLFS_TARGET}-gcc" \
-	AR="${CLFS_TARGET}-ar" RANLIB="${CLFS_TARGET}-ranlib" \
-	../$PackageName/configure --prefix=/tools \
-	--host=${CLFS_TARGET} --build=${CLFS_HOST} \
-	--disable-profile --enable-add-ons \
-	--with-tls --enable-kernel=2.6.0 --with-__thread \
-	--with-binutils=/cross-tools/bin --with-headers=/tools/include \
-	--cache-file=config.cache
+	  AR="${CLFS_TARGET}-ar" RANLIB="${CLFS_TARGET}-ranlib" \
+	  CFLAGS="-O2 -pipe -mabi=n32" CXXFLAGS="-O2 -pipe -maib=n32" \
+	  ../eglibc-2.12/configure --prefix=/tools \
+	  --host=${CLFS_TARGET} --build=${CLFS_BUILD} \
+	  --disable-profile --enable-add-ons \
+	  --with-tls --enable-kernel=2.6.0 --with-__thread \
+	  --with-binutils=/cross-tools/bin --with-headers=/tools/include \
+	  --cache-file=config.cache
+
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.
