@@ -44,7 +44,6 @@ EOF
 
 	BUILD_CC="gcc" CC="${CLFS_TARGET}-gcc ${BUILDN32}" \
 	  AR="${CLFS_TARGET}-ar" RANLIB="${CLFS_TARGET}-ranlib" \
-	  LD="${CLFS_TARGET}-ld"  \
 	  CFLAGS="-O2 -pipe" CXXFLAGS="-O2 -pipe" \
 	  ../eglibc-2.12/configure --prefix=/tools \
 	  --host=${CLFS_TARGET} --build=${CLFS_BUILD} \

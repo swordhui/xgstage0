@@ -41,7 +41,7 @@ build)
 	--with-ppl=/cross-tools --with-cloog=/cross-tools \
 	--without-headers --with-newlib --disable-decimal-float \
 	--disable-libgomp --disable-libmudflap --disable-libssp \
-	--disable-threads --enable-languages=c --disable-multilib
+	--disable-threads --enable-languages=c 
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.

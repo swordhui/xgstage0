@@ -2,8 +2,8 @@
 
 . functions_pub
 
-PackageName=gcc-4.4.3
-PackageURL=http://ftp.gnu.org/pub/gnu/gcc/gcc-4.4.3/gcc-4.4.3.tar.bz2
+PackageName=gcc-4.5.1
+PackageURL=http://ftp.gnu.org/pub/gnu/gcc/$PackageName/$PackageName.tar.bz2
 
 
 case "${1}" in
@@ -18,9 +18,12 @@ build)
 	echo -en '#undef STANDARD_INCLUDE_DIR\n#define STANDARD_INCLUDE_DIR "/tools/include/"\n\n' >> gcc/config/linux.h
 	echo -en '\n#undef STANDARD_STARTFILE_PREFIX_1\n#define STANDARD_STARTFILE_PREFIX_1 "/tools/lib/"\n' >> gcc/config/linux.h
 	echo -en '\n#undef STANDARD_STARTFILE_PREFIX_2\n#define STANDARD_STARTFILE_PREFIX_2 ""\n' >> gcc/config/linux.h
+
 	cp -v gcc/Makefile.in{,.orig}
 	sed -e "s@\(^CROSS_SYSTEM_HEADER_DIR =\).*@\1 /tools/include@g" \
 	    gcc/Makefile.in.orig > gcc/Makefile.in
+	err_check "[Error] patch $PackageName failed."	
+
 	mkdir -v ../gcc-build
 	cd ../gcc-build
 
@@ -32,7 +35,7 @@ build)
 	--enable-shared --enable-languages=c,c++ --enable-__cxa_atexit \
 	--with-mpfr=/cross-tools --with-gmp=/cross-tools --enable-c99 \
 	--with-ppl=/cross-tools --with-cloog=/cross-tools \
-	--enable-long-long --enable-threads=posix --disable-multilib
+	--enable-long-long --enable-threads=posix 
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.
