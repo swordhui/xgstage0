@@ -2,21 +2,17 @@
 
 . functions_pub
 
-PackageName=binutils-2.20
-PackageURL=http://ftp.gnu.org/pub/gnu/binutils/binutils-2.20.tar.bz2
-PatchURL="http://patches.cross-lfs.org/dev/binutils-2.20-branch_update-1.patch"
+PackageName=binutils-2.20.1
+PackageURL=http://ftp.gnu.org/pub/gnu/binutils/$PackageName.tar.bz2
 
 
 case "${1}" in
 download)
 	check_and_download $PackageURL
-	check_and_download $PatchURL
 	;;
 build)
 	#step0: unpack.
         unpack_and_enter $PackageName $PackageURL
-	patch -Np1 -i $LFS_SOURCE/binutils-2.20-branch_update-1.patch
-	err_check "[Error] patch $PackageName failed."
 
 	mkdir -v ../binutils-build
 	cd ../binutils-build
@@ -25,12 +21,15 @@ build)
 	#configure	
 	AR=ar AS=as ../$PackageName/configure \
 	--prefix=/cross-tools --host=${CLFS_BUILD} --target=${CLFS_TARGET} \
-	--with-sysroot=${LFS} --with-lib-path=/tools/lib --disable-nls --enable-shared \
-	--disable-multilib
+	--with-sysroot=${LFS} --with-lib-path=/tools/lib \
+	--disable-nls --enable-shared \
+	--enable-64-bit-bfd
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.
 	make configure-host
+	err_check "[Error] make $PackageName failed."	
+
 	make
 	err_check "[Error] make $PackageName failed."	
 

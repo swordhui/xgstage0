@@ -20,10 +20,16 @@ build)
 	tar xpf $LFS_SOURCE/$(basename $Package_portsURL)
 	err_check "[Error] uncompress patch failed."
 	
-	#configure	
+	#Disable linking to libgcc_eh
 	cp -v Makeconfig{,.orig}
 	sed -e 's/-lgcc_eh//g' Makeconfig.orig > Makeconfig
 	err_check "[Error] patch patch failed."
+
+	cp config.make.in{,.orig}
+	sed '/ldd-rewrite-script/s:@:${objdir}/&:' config.make.in.orig > config.make.in
+	err_check "[Error] patch patch failed."
+
+
 
 	mkdir -v ../eglibc-build
 	cd ../eglibc-build
@@ -36,9 +42,10 @@ libc_cv_ssp=no
 EOF
 
 
-	BUILD_CC="gcc" CC="${CLFS_TARGET}-gcc" \
+	BUILD_CC="gcc" CC="${CLFS_TARGET}-gcc ${BUILDN32}" \
 	  AR="${CLFS_TARGET}-ar" RANLIB="${CLFS_TARGET}-ranlib" \
-	  CFLAGS="-O2 -pipe -mabi=n32" CXXFLAGS="-O2 -pipe -maib=n32" \
+	  LD="${CLFS_TARGET}-ld"  \
+	  CFLAGS="-O2 -pipe" CXXFLAGS="-O2 -pipe" \
 	  ../eglibc-2.12/configure --prefix=/tools \
 	  --host=${CLFS_TARGET} --build=${CLFS_BUILD} \
 	  --disable-profile --enable-add-ons \

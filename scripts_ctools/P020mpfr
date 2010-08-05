@@ -2,7 +2,7 @@
 
 . functions_pub
 
-PackageName=mpfr-2.4.2
+PackageName=mpfr-3.0.0
 PackageURL=http://www.mpfr.org/$PackageName/$PackageName.tar.bz2
 
 

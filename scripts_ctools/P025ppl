@@ -18,6 +18,14 @@ build)
 	#step0: unpack.
 	unpack_and_enter $PackageName $PackageURL
 
+	#patch
+	cp configure{,.orig}
+	err_check "patch $PackageName failed."
+
+	sed -e "s/__GMP_BITS_PER_MP_LIMB/GMP_LIMB_BITS/g" \
+	    configure.orig > configure
+	err_check "patch $PackageName failed."
+
 	#step1: configure.
 	LDFLAGS="-Wl,-rpath,/cross-tools/lib" \
 		 ./configure --prefix=/cross-tools --enable-shared \

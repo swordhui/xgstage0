@@ -2,7 +2,7 @@
 
 . functions_pub
 
-PackageName=gcc-4.4.3
+PackageName=gcc-4.5.1
 PackageURL=http://ftp.gnu.org/pub/gnu/gcc/$PackageName/$PackageName.tar.bz2
 
 
@@ -15,13 +15,20 @@ build)
         unpack_and_enter $PackageName $PackageURL -static
 	#patch -Np1 -i $LFS_SOURCE/gcc-4.4.2-branch_update-1.patch
 	#patch -Np1 -i $LFS_SOURCE/gcc-4.4.2-specs-1.patch
+
 	echo -en '#undef STANDARD_INCLUDE_DIR\n#define STANDARD_INCLUDE_DIR "/tools/include/"\n\n' >> gcc/config/linux.h
 	echo -en '\n#undef STANDARD_STARTFILE_PREFIX_1\n#define STANDARD_STARTFILE_PREFIX_1 "/tools/lib/"\n' >> gcc/config/linux.h
 	echo -en '\n#undef STANDARD_STARTFILE_PREFIX_2\n#define STANDARD_STARTFILE_PREFIX_2 ""\n' >> gcc/config/linux.h
+
 	cp -v gcc/Makefile.in{,.orig}
+	err_check "[Error] patch $PackageName failed."	
+
 	sed -e "s@\(^CROSS_SYSTEM_HEADER_DIR =\).*@\1 /tools/include@g" \
 	    gcc/Makefile.in.orig > gcc/Makefile.in
+	err_check "[Error] patch $PackageName failed."	
 	touch /tools/include/limits.h
+	err_check "[Error] patch $PackageName failed."	
+
 	mkdir -v ../gcc-build
 	cd ../gcc-build
 
