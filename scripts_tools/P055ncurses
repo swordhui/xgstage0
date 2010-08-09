@@ -11,6 +11,7 @@ download)
 	check_and_download $PackageURL
 	;;
 build)
+	exit 1
 	#step0: unpack.
         unpack_and_enter $PackageName $PackageURL
 	patch -Np1 -i $LFS_SOURCE/ncurses-5.7-bash_fix-1.patch
