@@ -12,6 +12,7 @@ download)
 	;;
 build)
 	#step0: unpack.
+	exit 1
         unpack_and_enter $PackageName $PackageURL
 	patch -Np1 -i $LFS_SOURCE/gcc-4.4.2-branch_update-1.patch
 	patch -Np1 -i $LFS_SOURCE/gcc-4.4.2-specs-1.patch

@@ -15,7 +15,8 @@ build)
         unpack_and_enter $PackageName $PackageURL
 
 	#configure	
-	./configure --prefix=/tools
+	CC="${CC} ${BUILD64}" \
+	   ./configure --prefix=/tools
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.

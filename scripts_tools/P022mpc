@@ -2,8 +2,8 @@
 
 . functions_pub
 
-PackageName=cloog-ppl-0.15.7
-PackageURL="ftp://gcc.gnu.org/pub/gcc/infrastructure/$PackageName.tar.gz"
+PackageName=mpc-0.8.2
+PackageURL=http://www.multiprecision.org/mpc/download/$PackageName.tar.gz
 
 
 
@@ -14,18 +14,13 @@ download)
 	check_and_download $PackageURL
 	;;
 build)
+
 	#step0: unpack.
 	unpack_and_enter $PackageName $PackageURL
 
 	#step1: configure.
-	cp -v configure{,.orig}
-	sed "/LD_LIBRARY_PATH=/d" configure.orig > configure
-	err_check "patch $PackageName failed."
-
-	LDFLAGS="-Wl,-rpath,/cross-tools/lib" \
-	./configure --prefix=/tools \
-	--build=${CLFS_HOST} --host=${CLFS_TARGET} --with-bits=gmp \
-	--with-ppl=/tools --with-gmp=/tools
+	CC="${CC} ${BUILD64}" ./configure --prefix=/tools \
+	    --build=${CLFS_HOST} --host=${CLFS_TARGET}
 	err_check "configure $PackageName failed."
 
 	#step2: make

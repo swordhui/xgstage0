@@ -14,16 +14,22 @@ download)
 	check_and_download $PackageURL
 	;;
 build)
-
 	#step0: unpack.
 	unpack_and_enter $PackageName $PackageURL
 
+	sed -i "s/__GMP_BITS_PER_MP_LIMB/GMP_LIMB_BITS/g" configure
+	err_check "patch $PackageName failed."
+
 	#step1: configure.
-	./configure --prefix=/tools \
-	--build=${CLFS_HOST} --host=${CLFS_TARGET} \
-	--enable-interfaces="c,cxx" --enable-shared --disable-optimization \
-	--with-libgmp-prefix=/tools --with-libgmpxx-prefix=/tools
+	CC="${CC} ${BUILD64}" ./configure --prefix=/tools \
+	    --build=${CLFS_HOST} --host=${CLFS_TARGET} \
+	    --enable-interfaces="c,cxx" --enable-shared \
+	    --disable-optimization --with-libgmp-prefix=/tools \
+	    --with-libgmpxx-prefix=/tools
 	err_check "configure $PackageName failed."
+
+	echo '#define PPL_GMP_SUPPORTS_EXCEPTIONS 1' >> confdefs.h
+	err_check "patch $PackageName failed."
 
 	#step2: make
 	make

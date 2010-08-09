@@ -13,5 +13,5 @@ echo ""
 
 #download tools.
 echo ">>> downloading tools..."
-#bash scripts_tools/download
+bash scripts_tools/download
 echo ""

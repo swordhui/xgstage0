@@ -5,6 +5,7 @@ export CFLAGS=""
 
 #cross compile building platform (autodetect)
 CLFS_BUILD="$MACHTYPE"
+CLFS_HOST="$CLFS_BUILD"
 
 #cross compile host/target platform (mips,little endian)
 CLFS_TARGET="mips64el-unknown-linux-gnu"
@@ -13,4 +14,22 @@ CLFS_TARGET="mips64el-unknown-linux-gnu"
 #export ABI="n32"
 export BUILDN32="-mabi=n32"
 export BUILD64="-mabi=64"
+
+
+#configuration for tools.
+
+if [ "$LFSSIGN" == "tools" ]; then
+
+#set for tools stage.
+export CC="${CLFS_TARGET}-gcc"
+export CXX="${CLFS_TARGET}-g++"
+export AR="${CLFS_TARGET}-ar"
+export AS="${CLFS_TARGET}-as"
+export RANLIB="${CLFS_TARGET}-ranlib"
+export LD="${CLFS_TARGET}-ld"
+export STRIP="${CLFS_TARGET}-strip"
+
+export CFLAGS_FOR_TARGET="-O2 -pipe -march=loongson2f"
+
+fi
 
