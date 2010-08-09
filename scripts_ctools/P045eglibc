@@ -34,26 +34,23 @@ build)
 	mkdir -v ../eglibc-build
 	cd ../eglibc-build
 
-cat > config.cache << "EOF"
+	cat > config.cache << "EOF"
 libc_cv_forced_unwind=yes
 libc_cv_c_cleanup=yes
 libc_cv_gnu89_inline=yes
 libc_cv_ssp=no
 EOF
+	err_check "[Error] patch patch failed."
 
-	#set ld flags
-	export LDEMULATION=elf32btsmipn32
-
-	BUILD_CC="gcc" CC="${CLFS_TARGET}-gcc ${BUILDN32}" \
-	  AR="${CLFS_TARGET}-ar" RANLIB="${CLFS_TARGET}-ranlib" \
-	  CFLAGS="-O2 -pipe" CXXFLAGS="-O2 -pipe" \
-	  ../eglibc-2.12/configure --prefix=/tools \
-	  --host=${CLFS_TARGET} --build=${CLFS_BUILD} \
-	  --disable-profile --enable-add-ons \
-	  --with-tls --enable-kernel=2.6.0 --with-__thread \
-	  --with-binutils=/cross-tools/bin --with-headers=/tools/include \
-	  --cache-file=config.cache
-
+	BUILD_CC="gcc" CC="${CLFS_TARGET}-gcc ${BUILD64}" \
+      	AR="${CLFS_TARGET}-ar" RANLIB="${CLFS_TARGET}-ranlib" \
+	CFLAGS="-O2 -pipe" \
+	../eglibc-2.12/configure --prefix=/tools \
+        	--host=${CLFS_TARGET} --build=${CLFS_BUILD} \
+	        --disable-profile --enable-add-ons \
+	        --with-tls --enable-kernel=2.6.0 --with-__thread \
+	        --with-binutils=/cross-tools/bin --with-headers=/tools/include \
+	        --cache-file=config.cache
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.

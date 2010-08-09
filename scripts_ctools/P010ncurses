@@ -4,17 +4,23 @@
 
 PackageName=ncurses-5.7
 PackageURL=http://ftp.gnu.org/pub/gnu/ncurses/$PackageName.tar.gz
+PatchURL=http://patches.cross-lfs.org/dev/ncurses-5.7-bash_fix-1.patch
 
 
 case "${1}" in
 download)
 	#download package from URL.
 	check_and_download $PackageURL
+	check_and_download $PatchURL
 	;;
 build)
 
 	#step0: unpack.
 	unpack_and_enter $PackageName $PackageURL
+
+	#patch
+	patch -Np1 -i $LFS_SOURCE/ncurses-5.7-bash_fix-1.patch
+	err_check "patch $PackageName failed."
 
 	#step1: configure.
 	./configure --prefix=/cross-tools \

@@ -12,4 +12,5 @@ CLFS_TARGET="mips64el-unknown-linux-gnu"
 #ABI
 #export ABI="n32"
 export BUILDN32="-mabi=n32"
+export BUILD64="-mabi=64"
 

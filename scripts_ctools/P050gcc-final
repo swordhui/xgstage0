@@ -4,20 +4,26 @@
 
 PackageName=gcc-4.5.1
 PackageURL=http://ftp.gnu.org/pub/gnu/gcc/$PackageName/$PackageName.tar.bz2
+PatchURL=http://patches.cross-lfs.org/dev/gcc-4.5.1-pure64_specs-1.patch
 
 
 case "${1}" in
 download)
 	check_and_download $PackageURL
+	check_and_download $PatchURL
 	;;
 build)
 	#step0: unpack.
         unpack_and_enter $PackageName $PackageURL -final
-	#patch -Np1 -i $LFS_SOURCE/gcc-4.4.2-branch_update-1.patch
-	#patch -Np1 -i $LFS_SOURCE/gcc-4.4.2-specs-1.patch
+
+	#patch
+	patch -Np1 -i $LFS_SOURCE/gcc-4.5.1-pure64_specs-1.patch
+	err_check "[Error] configure $PackageName failed."
+
 	echo -en '#undef STANDARD_INCLUDE_DIR\n#define STANDARD_INCLUDE_DIR "/tools/include/"\n\n' >> gcc/config/linux.h
 	echo -en '\n#undef STANDARD_STARTFILE_PREFIX_1\n#define STANDARD_STARTFILE_PREFIX_1 "/tools/lib/"\n' >> gcc/config/linux.h
 	echo -en '\n#undef STANDARD_STARTFILE_PREFIX_2\n#define STANDARD_STARTFILE_PREFIX_2 ""\n' >> gcc/config/linux.h
+
 
 	cp -v gcc/Makefile.in{,.orig}
 	sed -e "s@\(^CROSS_SYSTEM_HEADER_DIR =\).*@\1 /tools/include@g" \
@@ -27,18 +33,18 @@ build)
 	mkdir -v ../gcc-build
 	cd ../gcc-build
 
-	#set ld flags
-	export LDEMULATION=elf32btsmipn32
-
 	#configure	
 	AR=ar LDFLAGS="-Wl,-rpath,/cross-tools/lib" \
+	CFLAGS="-O2 -pipe" CFLAGS_FOR_TARGET="-O2 -mabi=64" \
 	../$PackageName/configure --prefix=/cross-tools \
 	--build=${CLFS_BUILD} --target=${CLFS_TARGET} --host=${CLFS_BUILD} \
 	--with-sysroot=${LFS} --with-local-prefix=/tools --disable-nls \
 	--enable-shared --enable-languages=c,c++ --enable-__cxa_atexit \
 	--with-mpfr=/cross-tools --with-gmp=/cross-tools --enable-c99 \
 	--with-ppl=/cross-tools --with-cloog=/cross-tools \
-	--enable-long-long --enable-threads=posix 
+	--enable-long-long --enable-threads=posix --with-abi=64 \
+	--disable-multilib
+
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.

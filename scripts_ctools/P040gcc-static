@@ -4,21 +4,26 @@
 
 PackageName=gcc-4.5.1
 PackageURL=http://ftp.gnu.org/pub/gnu/gcc/$PackageName/$PackageName.tar.bz2
+PatchURL=http://patches.cross-lfs.org/dev/gcc-4.5.1-pure64_specs-1.patch
 
 
 case "${1}" in
 download)
 	check_and_download $PackageURL
+	check_and_download $PatchURL
 	;;
 build)
 	#step0: unpack.
         unpack_and_enter $PackageName $PackageURL -static
-	#patch -Np1 -i $LFS_SOURCE/gcc-4.4.2-branch_update-1.patch
-	#patch -Np1 -i $LFS_SOURCE/gcc-4.4.2-specs-1.patch
+
+	#patch
+	patch -Np1 -i $LFS_SOURCE/gcc-4.5.1-pure64_specs-1.patch
+	err_check "[Error] configure $PackageName failed."
 
 	echo -en '#undef STANDARD_INCLUDE_DIR\n#define STANDARD_INCLUDE_DIR "/tools/include/"\n\n' >> gcc/config/linux.h
 	echo -en '\n#undef STANDARD_STARTFILE_PREFIX_1\n#define STANDARD_STARTFILE_PREFIX_1 "/tools/lib/"\n' >> gcc/config/linux.h
 	echo -en '\n#undef STANDARD_STARTFILE_PREFIX_2\n#define STANDARD_STARTFILE_PREFIX_2 ""\n' >> gcc/config/linux.h
+
 
 	cp -v gcc/Makefile.in{,.orig}
 	err_check "[Error] patch $PackageName failed."	
@@ -26,6 +31,7 @@ build)
 	sed -e "s@\(^CROSS_SYSTEM_HEADER_DIR =\).*@\1 /tools/include@g" \
 	    gcc/Makefile.in.orig > gcc/Makefile.in
 	err_check "[Error] patch $PackageName failed."	
+
 	touch /tools/include/limits.h
 	err_check "[Error] patch $PackageName failed."	
 
@@ -41,7 +47,7 @@ build)
 	--with-ppl=/cross-tools --with-cloog=/cross-tools \
 	--without-headers --with-newlib --disable-decimal-float \
 	--disable-libgomp --disable-libmudflap --disable-libssp \
-	--disable-threads --enable-languages=c 
+	--disable-threads --enable-languages=c --with-abi=64 
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.
