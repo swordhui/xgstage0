@@ -27,6 +27,9 @@ build)
 	mkdir -v ../gcc-build
 	cd ../gcc-build
 
+	#set ld flags
+	export LDEMULATION=elf32btsmipn32
+
 	#configure	
 	AR=ar LDFLAGS="-Wl,-rpath,/cross-tools/lib" \
 	../$PackageName/configure --prefix=/cross-tools \
