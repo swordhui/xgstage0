@@ -30,6 +30,8 @@ export LD="${CLFS_TARGET}-ld"
 export STRIP="${CLFS_TARGET}-strip"
 
 export CFLAGS_FOR_TARGET="-O2 -pipe -march=loongson2f"
+export CXXFLAGS_FOR_TARGET="-O2 -pipe -march=loongson2f"
+export LIBCFLAGS_FOR_TARGET="-O2 -pipe -march=loongson2f"
 
 fi
 
