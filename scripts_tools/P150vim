@@ -2,18 +2,22 @@
 
 . functions_pub
 
-PackageName=vim-7.2
+PackageName=vim72
 PackageURL=ftp://ftp.vim.org/pub/vim/unix/vim-7.2.tar.bz2
+PatchURL=http://patches.cross-lfs.org/dev/vim-7.2-branch_update-21.patch
 
 
 case "${1}" in
 download)
 	check_and_download $PackageURL
+	check_and_download $PatchURL
 	;;
 build)
 	#step0: unpack.
         unpack_and_enter $PackageName $PackageURL
+
 	patch -Np1 -i $LFS_SOURCE/vim-7.2-branch_update-21.patch
+	err_check "[Error] make $PackageName failed."	
 
 	#configure	
 cat > src/auto/config.cache << "EOF"
@@ -26,13 +30,15 @@ vim_cv_toupper_broken=no
 vim_cv_tty_group=world
 ac_cv_sizeof_int=4
 EOF
+
 	echo '#define SYS_VIMRC_FILE "/tools/etc/vimrc"' >> src/feature.h
-	CPPFLAGS="-DUNUSED=" ./configure \
-	--build=${CLFS_HOST} --host=${CLFS_TARGET} \
-	--prefix=/tools --enable-multibyte --enable-gui=no \
-	--disable-gtktest --disable-xim --with-features=normal \
-	--disable-gpm --without-x --disable-netbeans \
-	--with-tlib=ncurses
+
+	CC="${CC} ${BUILD64}" CXX="${CXX} ${BUILD64}" CPPFLAGS="-DUNUSED=" \
+	    ./configure --build=${CLFS_HOST} --host=${CLFS_TARGET} \
+	    --prefix=/tools --enable-multibyte --enable-gui=no \
+	    --disable-gtktest --disable-xim --with-features=normal \
+	    --disable-gpm --without-x --disable-netbeans \
+	    --with-tlib=ncurses
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.
@@ -41,6 +47,8 @@ EOF
 
 	#step5: install.
 	make install
+	err_check "[Error] install $PackageName failed."
+
 	ln -sv vim /tools/bin/vi
 	err_check "[Error] install $PackageName failed."
 

@@ -15,8 +15,8 @@ build)
         unpack_and_enter $PackageName $PackageURL
 
 	#configure	
-	./configure --prefix=/tools \
-	--build=${CLFS_HOST} --host=${CLFS_TARGET}
+	CC="${CC} ${BUILD64}" ./configure --prefix=/tools \
+	   --build=${CLFS_HOST} --host=${CLFS_TARGET}
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.

@@ -2,8 +2,8 @@
 
 . functions_pub
 
-PackageName=tar-1.22
-PackageURL=http://ftp.gnu.org/gnu/tar/tar-1.22.tar.bz2
+PackageName=tar-1.23
+PackageURL=http://ftp.gnu.org/gnu/tar/$PackageName.tar.bz2
 
 
 case "${1}" in
@@ -26,9 +26,10 @@ gl_cv_func_mbrtowc_null_arg=yes
 gl_cv_func_mbrtowc_retval=yes
 gl_cv_func_wcrtomb_retval=yes
 EOF
-	./configure --prefix=/tools \
-	--build=${CLFS_HOST} --host=${CLFS_TARGET} \
-	--cache-file=config.cache
+
+	CC="${CC} ${BUILD64}" ./configure --prefix=/tools \
+	   --build=${CLFS_HOST} --host=${CLFS_TARGET} \
+	   --cache-file=config.cache
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.

@@ -2,8 +2,8 @@
 
 . functions_pub
 
-PackageName=grep-2.5.4
-PackageURL=http://ftp.gnu.org/gnu/grep/grep-2.5.4.tar.bz2
+PackageName=grep-2.6.3
+PackageURL=http://ftp.gnu.org/gnu/grep/$PackageName.tar.gz
 
 
 case "${1}" in
@@ -14,11 +14,16 @@ build)
 	#step0: unpack.
         unpack_and_enter $PackageName $PackageURL
 
-	#configure	
-	./configure --prefix=/tools \
-	--build=${CLFS_HOST} --host=${CLFS_TARGET} \
-	--disable-perl-regexp --without-included-regex
+cat > config.cache << EOF
+ac_cv_func_malloc_0_nonnull=yes
+ac_cv_func_realloc_0_nonnull=yes
+EOF
 
+	#configure	
+	CC="${CC} ${BUILD64}" ./configure --prefix=/tools \
+    		--build=${CLFS_HOST} --host=${CLFS_TARGET} \
+	        --disable-perl-regexp --without-included-regex \
+		--cache-file=config.cache
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.

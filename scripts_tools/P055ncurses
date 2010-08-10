@@ -3,38 +3,44 @@
 . functions_pub
 
 PackageName=ncurses-5.7
-PackageURL=http://ftp.gnu.org/pub/gnu/ncurses/ncurses-5.7.tar.gz
+PackageURL=http://ftp.gnu.org/pub/gnu/ncurses/$PackageName.tar.gz
+PatchURL=http://patches.cross-lfs.org/dev/ncurses-5.7-bash_fix-1.patch
 
 
 case "${1}" in
 download)
+	#download package from URL.
 	check_and_download $PackageURL
+	check_and_download $PatchURL
 	;;
 build)
-	exit 1
+
 	#step0: unpack.
-        unpack_and_enter $PackageName $PackageURL
+	unpack_and_enter $PackageName $PackageURL
+
+	#patch
 	patch -Np1 -i $LFS_SOURCE/ncurses-5.7-bash_fix-1.patch
+	err_check "patch $PackageName failed."
 
-	#configure	
-	./configure --prefix=/tools --with-shared \
-	--build=${CLFS_HOST} --host=${CLFS_TARGET} \
-	--without-debug --without-ada \
+	#step1: configure.
+	CC="${CC} ${BUILD64}" CXX="${CXX} ${BUILD64}" \
+	./configure --prefix=/tools --with-shared --build=${CLFS_HOST} \
+	--host=${CLFS_TARGET} --without-debug --without-ada \
 	--enable-overwrite --with-build-cc=gcc
-	err_check "[Error] configure $PackageName failed."
+	err_check "configure $PackageName failed."
 
-	#step4: make.
-	make
-	err_check "[Error] make $PackageName failed."	
+	#step2: make
+	make 
+	err_check "make $PackageName failed."
 
-	#step5: install.
+
+	#step3: install
 	make install
-	err_check "[Error] install $PackageName failed."
+	err_check "install $PackageName failed."
 
-	#leave directory.
+	#leave.
 	package_leave $PackageName $PackageURL
 	;;
-
 *)
 	exit 1
 	;;

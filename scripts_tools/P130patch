@@ -2,8 +2,8 @@
 
 . functions_pub
 
-PackageName=patch-2.5.9
-PackageURL=ftp://alpha.gnu.org/gnu/diffutils/patch-2.5.9.tar.gz
+PackageName=patch-2.6
+PackageURL=ftp://ftp.gnu.org/gnu/patch/$PackageName.tar.bz2
 
 
 case "${1}" in
@@ -15,8 +15,8 @@ build)
         unpack_and_enter $PackageName $PackageURL
 
 	#configure	
-	./configure --prefix=/tools \
-	--build=${CLFS_HOST} --host=${CLFS_TARGET}
+	CC="${CC} ${BUILD64}" ./configure --prefix=/tools \
+	    --build=${CLFS_HOST} --host=${CLFS_TARGET}
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.

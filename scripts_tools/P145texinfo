@@ -2,7 +2,7 @@
 
 . functions_pub
 
-PackageName=texinfo-4.13a
+PackageName=texinfo-4.13
 PackageURL=http://ftp.gnu.org/gnu/texinfo/texinfo-4.13a.tar.gz
 
 
@@ -15,13 +15,17 @@ build)
         unpack_and_enter $PackageName $PackageURL
 
 	#configure	
-	./configure --prefix=/tools \
-	--build=${CLFS_HOST} --host=${CLFS_TARGET}
+	C="${CC} ${BUILD64}" ./configure --prefix=/tools \
+	   --build=${CLFS_HOST} --host=${CLFS_TARGET}
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.
 	make -C tools/gnulib/lib
+	err_check "[Error] make $PackageName failed."	
+	
 	make -C tools
+	err_check "[Error] make $PackageName failed."	
+
 	make
 	err_check "[Error] make $PackageName failed."	
 

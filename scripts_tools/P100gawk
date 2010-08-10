@@ -2,8 +2,8 @@
 
 . functions_pub
 
-PackageName=gawk-3.1.7
-PackageURL=http://ftp.gnu.org/gnu/gawk/gawk-3.1.7.tar.bz2
+PackageName=gawk-3.1.8
+PackageURL=http://ftp.gnu.org/gnu/gawk/gawk-3.1.8.tar.bz2
 
 
 case "${1}" in
@@ -15,9 +15,8 @@ build)
         unpack_and_enter $PackageName $PackageURL
 
 	#configure	
-	./configure --prefix=/tools \
-	--build=${CLFS_HOST} --host=${CLFS_TARGET} \
-	--disable-libsigsegv
+	CC="${CC} ${BUILD64}" ./configure --prefix=/tools \
+	   --build=${CLFS_HOST} --host=${CLFS_TARGET}
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.

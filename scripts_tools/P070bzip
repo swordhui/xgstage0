@@ -20,7 +20,7 @@ build)
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.
-	make CC="${CC}" AR="${AR}" RANLIB="${RANLIB}"
+	make CC="${CC} ${BUILD64}" AR="${AR}" RANLIB="${RANLIB}"
 	err_check "[Error] make $PackageName failed."	
 
 	#step5: install.

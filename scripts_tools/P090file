@@ -2,7 +2,7 @@
 
 . functions_pub
 
-PackageName="file-5.03"
+PackageName="file-5.04"
 PackageURL="ftp://ftp.astron.com/pub/file/$PackageName.tar.gz"
 
 
@@ -17,11 +17,10 @@ build)
 
 	#step0: unpack.
 	unpack_and_enter $PackageName $PackageURL
-	patch -Np1 -i $LFS_SOURCE/file-5.03-cross_compile-1.patch
 
 	#step1: configure.
-	./configure --prefix=/tools \
-	--build=${CLFS_HOST} --host=${CLFS_TARGET}
+	CC="${CC} ${BUILD64}" ./configure --prefix=/tools \
+	   --build=${CLFS_HOST} --host=${CLFS_TARGET}
 	err_check "configure $PackageName failed."
 
 	#step2: make

@@ -2,8 +2,8 @@
 
 . functions_pub
 
-PackageName=make-3.82
-PackageURL=http://ftp.gnu.org/gnu/make/$PackageName.tar.bz2
+PackageName=util-linux-ng-2.18
+PackageURL=http://www.kernel.org/pub/linux/utils/util-linux-ng/v2.18/$PackageName.tar.bz2
 
 
 case "${1}" in
@@ -16,7 +16,8 @@ build)
 
 	#configure	
 	CC="${CC} ${BUILD64}" ./configure --prefix=/tools \
-	   --build=${CLFS_HOST} --host=${CLFS_TARGET}
+	    --build=${CLFS_HOST} --host=${CLFS_TARGET} \
+	        --disable-makeinstall-chown
 	err_check "[Error] configure $PackageName failed."
 
 	#step4: make.
