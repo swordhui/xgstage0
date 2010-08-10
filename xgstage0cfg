@@ -13,3 +13,6 @@ CLFS_TARGET="mips64el-unknown-linux-gnu"
 #export ABI="n32"
 export BUILDN32="-mabi=n32"
 
+CFLAGS_FOR_TARGET="-mabi=n32 -march=loongson2f -pipe -Os "
+CXXFLAGS_FOR_TARGET="-mabi=n32 -march=loongson2f -pipe -Os "
+LIBCFLAGS_FOR_TARGET="-mabi=n32 -march=loongson2f -pipe -Os "
